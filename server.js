@@ -7,7 +7,7 @@ const { Server } = require("socket.io");
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.resolve(__dirname, "public")));
+app.use(express.static(path.join(__dirname)));
 
 let arr = [];
 let playingArray = [];
@@ -34,7 +34,6 @@ io.on("connection", (socket) => {
                     sum: 1
                 };
                 playingArray.push(obj);
-
                 arr.splice(0, 2);
 
                 io.emit("find", { allPlayers: playingArray });
@@ -64,7 +63,7 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.sendFile(path.join(__dirname, "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;

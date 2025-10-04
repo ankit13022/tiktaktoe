@@ -5,74 +5,266 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tic-Tac-Toe</title>
-
     <link
-      href="https://fonts.googleapis.com/css2?family=Tilt+Warp&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
-
     <style>
-      body {
-        font-family: "Tilt Warp", sans-serif;
-        text-align: center;
-        background: #f9fafb;
+      :root {
+        --bg-color: #1a1a2e;
+        --container-bg: rgba(255, 255, 255, 0.08);
+        --primary-text: #e0e0e0;
+        --secondary-text: #a0a0b0;
+        --x-color: #4fc3f7; /* Light Blue */
+        --o-color: #ffd54f; /* Amber */
+        --win-color: #00e676; /* Green */
+        --accent-color: #e94560;
       }
 
-      #cont {
-        display: grid;
-        grid-template-columns: repeat(3, 100px);
-        grid-gap: 10px;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
-        margin-top: 20px;
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        background-image: linear-gradient(
+          315deg,
+          #1a1a2e 0%,
+          #16213e 74%
+        );
+        color: var(--primary-text);
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 8vw, 4rem);
+        font-weight: 700;
+        color: var(--primary-text);
+        margin-bottom: 2rem;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px var(--accent-color);
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 450px;
+        /* Glassmorphism Effect */
+        background: var(--container-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+      
+      .player-info {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      #whosTurn {
+        font-size: 1.8rem;
+        font-weight: 600;
+        height: 2.5rem;
+        transition: color 0.3s ease;
+      }
+      
+      #game-board {
+        position: relative; /* For positioning the winning line */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        width: 100%;
+        max-width: 360px;
       }
 
       .btn {
-        height: 100px;
-        width: 100px;
-        font-size: 2rem;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        font-size: clamp(2rem, 15vw, 4rem);
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        background-color: rgba(0, 0, 0, 0.2);
         cursor: pointer;
-        border-radius: 10px;
-        border: 2px solid #333;
-        background-color: #fff;
-        transition: 0.2s ease;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        color: transparent; /* Initially hide text */
+        text-shadow: none;  /* Initially hide shadow */
+      }
+      
+      .btn.x-symbol, .btn.o-symbol {
+        animation: fadeIn 0.4s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .btn.x-symbol {
+        color: var(--x-color);
+        text-shadow: 0 0 15px var(--x-color);
+      }
+
+      .btn.o-symbol {
+        color: var(--o-color);
+        text-shadow: 0 0 15px var(--o-color);
+      }
+
+      .btn:hover:not(:disabled) {
+        background-color: rgba(0, 0, 0, 0.4);
+        transform: translateY(-5px);
       }
 
       .btn:disabled {
         cursor: not-allowed;
-        background-color: #eee;
       }
 
-      #loading {
-        width: 80px;
+      /* --- Winning Line Styling --- */
+      #strike-line {
+        position: absolute;
+        background-color: var(--win-color);
+        height: 6px;
+        border-radius: 3px;
+        box-shadow: 0 0 10px var(--win-color);
+        transform-origin: left;
+        width: 0; /* Initially hidden */
+        transition: width 0.5s ease-in-out;
+      }
+      .strike-row-1 { top: 15.5%; left: 5%; width: 90%; }
+      .strike-row-2 { top: 49%;   left: 5%; width: 90%; }
+      .strike-row-3 { top: 82.5%; left: 5%; width: 90%; }
+      .strike-col-1 { top: 5%; left: 15.5%; width: 90%; transform: rotate(90deg); transform-origin: top left; }
+      .strike-col-2 { top: 5%; left: 49%;   width: 90%; transform: rotate(90deg); transform-origin: top left; }
+      .strike-col-3 { top: 5%; left: 82.5%; width: 90%; transform: rotate(90deg); transform-origin: top left; }
+      .strike-diag-1 { top: 5%; left: 5%; width: 127%; transform: rotate(45deg); transform-origin: top left;}
+      .strike-diag-2 { top: 5%; left: 95%; width: 127%; transform: rotate(135deg); transform-origin: top left;}
+
+
+      #nameForm {
+        text-align: center;
+      }
+
+      #name {
+        padding: 12px;
+        font-size: 1rem;
+        background-color: rgba(0,0,0,0.2);
+        color: var(--primary-text);
+        border: 1px solid var(--secondary-text);
+        border-radius: 8px;
+        width: 80%;
+        margin-top: 1rem;
+      }
+
+      #find {
         display: block;
-        margin: 20px auto;
+        margin: 1.5rem auto 0;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      #find:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px var(--accent-color);
+      }
+      #find:disabled {
+        background-color: #555;
+        cursor: not-allowed;
+      }
+
+      /* Modal for Game Over */
+      #gameOverModal {
+        display: none;
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: var(--container-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      #gameOverMessage {
+        font-size: 2.5rem;
+        margin-bottom: 25px;
+        font-weight: 700;
+      }
+
+      #playAgainBtn {
+        padding: 12px 25px;
+        font-size: 1.1rem;
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      #playAgainBtn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px var(--accent-color);
       }
     </style>
   </head>
-
   <body>
-    <h1>Tic-Tac-Toe</h1>
+    <h1>TIC-TAC-TOE</h1>
 
-    <div style="display: flex; width: 95vw; position: relative">
-      <p id="userCont">You: <span id="user"></span></p>
-      <p style="position: absolute; right: 0" id="oppNameCont">
-        Opponent: <span id="oppName"></span>
-      </p>
-    </div>
+    <div class="container">
+      <div id="playerInfoSection" style="display: none; width: 100%; text-align:center;">
+        <div class="player-info">
+          <p>You: <span id="user" style="color: var(--primary-text);"></span></p>
+          <p>Opponent: <span id="oppName" style="color: var(--primary-text);"></span></p>
+        </div>
+        <p style="font-size: 1.2rem; margin-top: 1rem;">
+          You are <span id="value" style="font-weight: bold;"></span>
+        </p>
+      </div>
 
-    <p id="valueCont">You are playing as <span id="value"></span></p>
-    <p id="whosTurn">X's Turn</p>
+      <p id="whosTurn" style="display: none;"></p>
 
-    <div id="setup">
-      <p style="font-size: 1.2rem" id="enterName">Enter your name:</p>
-      <input type="text" id="name" placeholder="Name" autocomplete="off" />
-      <button id="find">Search for a player</button>
-      <img id="loading" src="loading.gif" alt="Loading..." />
-    </div>
+      <div id="nameForm">
+        <p style="font-size: 1.2rem; font-weight: 600;">Enter your name to begin</p>
+        <input type="text" placeholder="Your Name" id="name" autocomplete="off" />
+        <button id="find">Find Opponent</button>
+        <img id="loading" src="loading.gif" alt="Loading..." style="display: none; width: 30px; margin-top: 1rem;" />
+      </div>
 
-    <div id="gameArea">
-      <div id="cont">
+      <div id="game-board" style="display: none;">
         <button id="btn1" class="btn"></button>
         <button id="btn2" class="btn"></button>
         <button id="btn3" class="btn"></button>
@@ -82,150 +274,169 @@
         <button id="btn7" class="btn"></button>
         <button id="btn8" class="btn"></button>
         <button id="btn9" class="btn"></button>
+        <div id="strike-line"></div>
+      </div>
+    </div>
+
+    <div id="gameOverModal">
+      <div class="modal-content">
+        <p id="gameOverMessage"></p>
+        <button id="playAgainBtn">Play Again</button>
       </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-
     <script>
-      const socket = io();
-      let name = "";
-      let playerValue = "";
-      const loading = document.getElementById("loading");
-      const gameArea = document.getElementById("gameArea");
+        // --- DOM Elements ---
+        const findBtn = document.getElementById("find");
+        const nameInput = document.getElementById("name");
+        const nameForm = document.getElementById("nameForm");
+        const loadingGif = document.getElementById("loading");
+        const gameBoard = document.getElementById("game-board");
+        const whosTurnText = document.getElementById("whosTurn");
+        const playerInfoSection = document.getElementById("playerInfoSection");
+        const userText = document.getElementById("user");
+        const oppNameText = document.getElementById("oppName");
+        const valueText = document.getElementById("value");
+        const allButtons = document.querySelectorAll(".btn");
+        const gameOverModal = document.getElementById("gameOverModal");
+        const gameOverMessage = document.getElementById("gameOverMessage");
+        const playAgainBtn = document.getElementById("playAgainBtn");
+        const strikeLine = document.getElementById("strike-line");
 
-      // Hide unnecessary sections initially
-      const hideGameUI = () => {
-        [
-          "userCont",
-          "oppNameCont",
-          "valueCont",
-          "whosTurn",
-          "gameArea",
-        ].forEach((id) => (document.getElementById(id).style.display = "none"));
-        loading.style.display = "none";
-      };
-      hideGameUI();
+        // --- Game State Variables ---
+        let playerName, playerSymbol, currentTurn;
+        let gameActive = false;
 
-      // Show game UI when paired
-      const showGameUI = () => {
-        [
-          "userCont",
-          "oppNameCont",
-          "valueCont",
-          "whosTurn",
-          "gameArea",
-        ].forEach((id) => (document.getElementById(id).style.display = "block"));
-        document.getElementById("setup").style.display = "none";
-      };
+        const socket = io();
 
-      document.getElementById("find").addEventListener("click", () => {
-        name = document.getElementById("name").value.trim();
-        if (!name) return alert("Please enter your name");
-
-        document.getElementById("user").innerText = name;
-        socket.emit("find", { name });
-        loading.style.display = "block";
-        document.getElementById("find").disabled = true;
-      });
-
-      // Match found
-      socket.on("find", ({ allPlayers }) => {
-        const player = allPlayers.find(
-          (p) => p.p1.p1name === name || p.p2.p2name === name
-        );
-        if (!player) return alert("Error: Match not found.");
-
-        const isP1 = player.p1.p1name === name;
-        const opponent = isP1 ? player.p2.p2name : player.p1.p1name;
-        playerValue = isP1 ? player.p1.p1value : player.p2.p2value;
-
-        document.getElementById("oppName").innerText = opponent;
-        document.getElementById("value").innerText = playerValue;
-        showGameUI();
-      });
-
-      // Board click handler
-      document.querySelectorAll(".btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          if (btn.innerText !== "") return;
-          btn.innerText = playerValue;
-          btn.disabled = true;
-          socket.emit("playing", {
-            value: playerValue,
-            id: btn.id,
-            name,
-          });
-        });
-      });
-
-      // Game play updates
-      socket.on("playing", ({ allPlayers }) => {
-        const player = allPlayers.find(
-          (p) => p.p1.p1name === name || p.p2.p2name === name
-        );
-        if (!player) return;
-
-        const { p1, p2, sum } = player;
-
-        const turnText = sum % 2 === 0 ? "O's Turn" : "X's Turn";
-        document.getElementById("whosTurn").innerText = turnText;
-
-        [p1, p2].forEach((playerObj) => {
-          if (playerObj.p1move)
-            updateButton(playerObj.p1move, "X");
-          if (playerObj.p2move)
-            updateButton(playerObj.p2move, "O");
+        // --- Event Listeners ---
+        findBtn.addEventListener("click", () => {
+            playerName = nameInput.value;
+            if (!playerName) { alert("Please enter a name"); return; }
+            userText.innerText = playerName;
+            socket.emit("find", { name: playerName });
+            loadingGif.style.display = "block";
+            findBtn.disabled = true;
         });
 
-        checkWinner(sum);
-      });
+        playAgainBtn.addEventListener('click', () => location.reload());
 
-      // Helper: update button
-      const updateButton = (id, symbol) => {
-        const btn = document.getElementById(id);
-        if (!btn.disabled) {
-          btn.innerText = symbol;
-          btn.disabled = true;
+        allButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                if (!gameActive || btn.innerText !== "") return;
+                btn.innerText = playerSymbol;
+                btn.classList.add(playerSymbol.toLowerCase() + '-symbol');
+                socket.emit("playing", { value: playerSymbol, id: btn.id, name: playerName });
+                disableBoard();
+            });
+        });
+
+        // --- Socket.IO Handlers ---
+        socket.on("find", (e) => {
+            const gameData = e.allPlayers.find(obj => obj.p1.p1name === playerName || obj.p2.p2name === playerName);
+            if (gameData) initializeGame(gameData);
+        });
+
+        socket.on("playing", (e) => {
+            const gameData = e.allPlayers.find(obj => obj.p1.p1name === playerName || obj.p2.p2name === playerName);
+            if (gameData) updateBoard(gameData);
+        });
+
+        // --- Game Functions ---
+        function initializeGame(gameData) {
+            playerSymbol = (gameData.p1.p1name === playerName) ? gameData.p1.p1value : gameData.p2.p2value;
+            oppNameText.innerText = (playerSymbol === 'X') ? gameData.p2.p2name : gameData.p1.p1name;
+            
+            if (playerSymbol === 'X') {
+                valueText.innerText = "X";
+                valueText.style.color = 'var(--x-color)';
+            } else {
+                valueText.innerText = "O";
+                valueText.style.color = 'var(--o-color)';
+            }
+
+            nameForm.style.display = "none";
+            playerInfoSection.style.display = "block";
+            gameBoard.style.display = "grid";
+            whosTurnText.style.display = "block";
+            gameActive = true;
+            updateBoard(gameData);
         }
-      };
 
-      // Winner check
-      const checkWinner = (sum) => {
-        const b = [...Array(10).keys()].map(
-          (i) => (document.getElementById("btn" + i)?.innerText || "")
-        );
+        function updateBoard(gameData) {
+            if (!gameActive) return;
 
-        const winCombos = [
-          [1, 2, 3],
-          [4, 5, 6],
-          [7, 8, 9],
-          [1, 4, 7],
-          [2, 5, 8],
-          [3, 6, 9],
-          [1, 5, 9],
-          [3, 5, 7],
+            currentTurn = (gameData.sum % 2 === 1) ? 'X' : 'O';
+            whosTurnText.innerText = `${currentTurn}'s Turn`;
+
+            if (gameData.p1.p1move) {
+                const btn = document.getElementById(gameData.p1.p1move);
+                btn.innerText = "X";
+                btn.classList.add('x-symbol');
+                btn.disabled = true;
+            }
+            if (gameData.p2.p2move) {
+                const btn = document.getElementById(gameData.p2.p2move);
+                btn.innerText = "O";
+                btn.classList.add('o-symbol');
+                btn.disabled = true;
+            }
+
+            checkWin(gameData.sum);
+
+            if (gameActive && currentTurn === playerSymbol) enableBoard();
+            else disableBoard();
+        }
+        
+        const winningCombinations = [
+            { combo: [0, 1, 2], class: "strike-row-1" }, { combo: [3, 4, 5], class: "strike-row-2" },
+            { combo: [6, 7, 8], class: "strike-row-3" }, { combo: [0, 3, 6], class: "strike-col-1" },
+            { combo: [1, 4, 7], class: "strike-col-2" }, { combo: [2, 5, 8], class: "strike-col-3" },
+            { combo: [0, 4, 8], class: "strike-diag-1" }, { combo: [2, 4, 6], class: "strike-diag-2" }
         ];
 
-        const winner = winCombos.find(
-          ([a, b1, c]) =>
-            b[a] && b[a] === b[b1] && b[a] === b[c]
-        );
-
-        if (winner) {
-          socket.emit("gameOver", { name });
-          setTimeout(() => {
-            alert(`${b[winner[0]]} WON!!`);
-            location.reload();
-          }, 500);
-        } else if (sum >= 10) {
-          socket.emit("gameOver", { name });
-          setTimeout(() => {
-            alert("DRAW!!");
-            location.reload();
-          }, 500);
+        function checkWin(sum) {
+            for (const { combo, class: strikeClass } of winningCombinations) {
+                const [a, b, c] = combo.map(index => allButtons[index].innerText);
+                if (a && a === b && a === c) {
+                    const winner = (sum % 2 !== 0) ? 'X' : 'O';
+                    drawWinningLine(strikeClass);
+                    setTimeout(() => endGame(winner), 500); // Delay for animation
+                    return;
+                }
+            }
+            if (sum === 9) endGame('draw');
         }
-      };
+        
+        function drawWinningLine(strikeClass) {
+            strikeLine.classList.add(strikeClass);
+            // Trigger the animation by setting the width after a short delay
+            setTimeout(() => {
+                strikeLine.style.width = strikeClass.includes('diag') ? '127%' : '90%';
+            }, 50);
+        }
+
+        function endGame(result) {
+            if (!gameActive) return; // Prevent multiple calls
+            gameActive = false;
+            disableBoard();
+            socket.emit("gameOver", { name: playerName });
+
+            let message = (result === 'draw') ? "It's a Draw! 🤝" : (result === playerSymbol) ? "You Won! 🎉" : "You Lost 😞";
+            gameOverMessage.innerText = message;
+            gameOverModal.style.display = "flex";
+        }
+
+        function enableBoard() {
+            whosTurnText.style.color = 'var(--win-color)'; // Green for your turn
+            allButtons.forEach(btn => { if (btn.innerText === "") btn.disabled = false; });
+        }
+
+        function disableBoard() {
+            whosTurnText.style.color = 'var(--accent-color)'; // Red for opponent's turn
+            allButtons.forEach(btn => btn.disabled = true);
+        }
     </script>
   </body>
 </html>

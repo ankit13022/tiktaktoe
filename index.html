@@ -423,7 +423,7 @@
             disableBoard();
             socket.emit("gameOver", { name: playerName });
 
-            let message = (result === 'draw') ? "It's a Draw! 🤝" : (result === playerSymbol) ? "You Won! 🎉" : "You Lost 😞";
+            let message = (result === 'draw') ? "It's a Draw! 🤝" : (result === playerSymbol) ? "You Lost 😞" : "You Won! 🎉";
             gameOverMessage.innerText = message;
             gameOverModal.style.display = "flex";
         }

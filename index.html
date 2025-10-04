@@ -4,37 +4,156 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tik-Tak-Toe</title>
+    <title>Tic-Tac-Toe Enhanced</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Tilt+Warp&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #f0f2f5;
+        color: #333;
+        margin: 0;
+      }
+      h1 {
+        font-size: 3rem;
+        color: #1a73e8;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 90%;
+        max-width: 400px;
+      }
+      .player-info {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      #whosTurn {
+        font-size: 1.5rem;
+        font-weight: 600;
+        height: 2.5rem;
+        color: #d93025;
+      }
+      #game-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 100%;
+        max-width: 330px;
+      }
+      .btn {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        font-size: 3rem;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+      }
+      .btn:hover:not(:disabled) {
+        background-color: #e8f0fe;
+        transform: scale(1.05);
+      }
+      .btn:disabled {
+        cursor: not-allowed;
+        color: #202124;
+      }
+      #name {
+        padding: 10px;
+        font-size: 1rem;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        width: 70%;
+      }
+      #find {
+        padding: 10px 20px;
+        font-size: 1rem;
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #find:disabled {
+        background-color: #999;
+      }
+      #loading {
+        width: 30px;
+        display: none;
+      }
+      /* Modal for Game Over */
+      #gameOverModal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      #gameOverMessage {
+        font-size: 2rem;
+        margin-bottom: 20px;
+      }
+      #playAgainBtn {
+        padding: 12px 25px;
+        font-size: 1rem;
+        background-color: #34a853;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
   </head>
-
   <body>
     <h1>Tic-Tac-Toe</h1>
 
-    <div style="display: flex; width: 95vw; position: relative">
-      <p id="userCont">You : <span id="user"></span></p>
-      <p style="position: absolute; right: 0" id="oppNameCont">
-        Opponent : <span id="oppName"></span>
-      </p>
-    </div>
-    <br />
-    <p id="valueCont">You are plaing as <span id="value"></span></p>
-    <br />
-    <p id="whosTurn">X's Turn</p>
-    <div>
-      <p style="font-size: 1.2rem" id="enterName">Enter your name :</p>
+    <div class="container">
+      <div id="playerInfoSection" style="display: none; width: 100%">
+        <div class="player-info">
+          <p id="userCont">You: <span id="user"></span></p>
+          <p id="oppNameCont">Opponent: <span id="oppName"></span></p>
+        </div>
+        <p id="valueCont" style="text-align: center; font-size: 1.2rem">
+          You are playing as <span id="value" style="font-weight: bold"></span>
+        </p>
+      </div>
 
-      <input type="text" placeholder="Name" id="name" autocomplete="off" />
-    </div>
-    <button id="find">Search for a player</button>
-    <img id="loading" src="loading.gif" alt="" />
+      <p id="whosTurn" style="display: none"></p>
 
-    <div id="bigcont">
-      <div id="cont">
+      <div id="nameForm">
+        <p style="font-size: 1.2rem">Enter your name:</p>
+        <input type="text" placeholder="Name" id="name" autocomplete="off" />
+        <button id="find">Search for a player</button>
+        <img id="loading" src="loading.gif" alt="Loading..." />
+      </div>
+
+      <div id="game-board" style="display: none">
         <button id="btn1" class="btn"></button>
         <button id="btn2" class="btn"></button>
         <button id="btn3" class="btn"></button>
@@ -46,164 +165,201 @@
         <button id="btn9" class="btn"></button>
       </div>
     </div>
-  </body>
-  <script src="/socket.io/socket.io.js"></script>
 
-  <script>
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("bigcont").style.display = "none";
-    document.getElementById("userCont").style.display = "none";
-    document.getElementById("oppNameCont").style.display = "none";
-    document.getElementById("valueCont").style.display = "none";
-    document.getElementById("whosTurn").style.display = "none";
+    <div id="gameOverModal">
+      <div class="modal-content">
+        <p id="gameOverMessage"></p>
+        <button id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
 
-    const socket = io();
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // --- DOM Elements ---
+      const findBtn = document.getElementById("find");
+      const nameInput = document.getElementById("name");
+      const nameForm = document.getElementById("nameForm");
+      const loadingGif = document.getElementById("loading");
+      const gameBoard = document.getElementById("game-board");
+      const whosTurnText = document.getElementById("whosTurn");
+      const playerInfoSection = document.getElementById("playerInfoSection");
+      const userText = document.getElementById("user");
+      const oppNameText = document.getElementById("oppName");
+      const valueText = document.getElementById("value");
+      const allButtons = document.querySelectorAll(".btn");
+      const gameOverModal = document.getElementById("gameOverModal");
+      const gameOverMessage = document.getElementById("gameOverMessage");
+      const playAgainBtn = document.getElementById("playAgainBtn");
 
-    let name;
+      // --- Game State Variables ---
+      let playerName;
+      let playerSymbol;
+      let currentTurn;
+      let gameActive = false;
 
-    document.getElementById("find").addEventListener("click", function () {
-      name = document.getElementById("name").value;
-      document.getElementById("user").innerText = name;
-      if (name == null || name == "") {
-        alert("Please enter a name");
-      } else {
-        socket.emit("find", { name: name });
+      const socket = io();
 
-        document.getElementById("loading").style.display = "block";
-        document.getElementById("find").disabled = true;
-      }
-    });
+      // --- Event Listeners ---
+      findBtn.addEventListener("click", () => {
+        playerName = nameInput.value;
+        if (!playerName) {
+          alert("Please enter a name");
+          return;
+        }
 
-    socket.on("find", (e) => {
-      let allPlayersArray = e.allPlayers;
-      console.log("html", allPlayersArray);
+        userText.innerText = playerName;
+        socket.emit("find", { name: playerName });
 
-      if (name != "") {
-        document.getElementById("userCont").style.display = "block";
-        document.getElementById("oppNameCont").style.display = "block";
-        document.getElementById("valueCont").style.display = "block";
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("name").style.display = "none";
-        document.getElementById("find").style.display = "none";
-        document.getElementById("enterName").style.display = "none";
-        document.getElementById("bigcont").style.display = "block";
-        document.getElementById("whosTurn").style.display = "block";
-        document.getElementById("whosTurn").innerText = "X's Turn";
-      }
-
-      let oppName;
-      let value;
-
-      const foundObject = allPlayersArray.find(
-        (obj) => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`
-      );
-      foundObject.p1.p1name == `${name}`
-        ? (oppName = foundObject.p2.p2name)
-        : (oppName = foundObject.p1.p1name);
-      foundObject.p1.p1name == `${name}`
-        ? (value = foundObject.p1.p1value)
-        : (value = foundObject.p2.p2value);
-
-      document.getElementById("oppName").innerText = oppName;
-      document.getElementById("value").innerText = value;
-    });
-
-    document.querySelectorAll(".btn").forEach((e) => {
-      e.addEventListener("click", function () {
-        let value = document.getElementById("value").innerText;
-        e.innerText = value;
-
-        socket.emit("playing", { value: value, id: e.id, name: name });
+        loadingGif.style.display = "block";
+        findBtn.disabled = true;
       });
-    });
+      
+      playAgainBtn.addEventListener('click', () => {
+          location.reload();
+      });
 
-    socket.on("playing", (e) => {
-      const foundObject = e.allPlayers.find(
-        (obj) => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`
-      );
+      allButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          // Prevent clicking if game is not active or button is already filled
+          if (!gameActive || btn.innerText !== "") return;
+          
+          btn.innerText = playerSymbol;
+          socket.emit("playing", { value: playerSymbol, id: btn.id, name: playerName });
+          
+          // Immediately disable board to prevent multiple clicks
+          disableBoard(); 
+        });
+      });
 
-      p1id = foundObject.p1.p1move;
-      p2id = foundObject.p2.p2move;
+      // --- Socket.IO Handlers ---
+      socket.on("find", (e) => {
+        const gameData = e.allPlayers.find(
+          (obj) => obj.p1.p1name === playerName || obj.p2.p2name === playerName
+        );
 
-      if (foundObject.sum % 2 == 0) {
-        document.getElementById("whosTurn").innerText = "O's Turn";
-      } else {
-        document.getElementById("whosTurn").innerText = "X's Turn";
+        if (gameData) {
+          initializeGame(gameData);
+        }
+      });
+
+      socket.on("playing", (e) => {
+        const gameData = e.allPlayers.find(
+          (obj) => obj.p1.p1name === playerName || obj.p2.p2name === playerName
+        );
+        
+        if (gameData) {
+          updateBoard(gameData);
+        }
+      });
+      
+      function initializeGame(gameData) {
+        // Set up player-specific state
+        if (gameData.p1.p1name === playerName) {
+          playerSymbol = gameData.p1.p1value;
+          oppNameText.innerText = gameData.p2.p2name;
+        } else {
+          playerSymbol = gameData.p2.p2value;
+          oppNameText.innerText = gameData.p1.p1name;
+        }
+        valueText.innerText = playerSymbol;
+        
+        // Hide name form, show game board
+        nameForm.style.display = "none";
+        playerInfoSection.style.display = "block";
+        gameBoard.style.display = "grid";
+        whosTurnText.style.display = "block";
+        
+        gameActive = true;
+        updateBoard(gameData);
+      }
+      
+      function updateBoard(gameData) {
+        if (!gameActive) return;
+
+        // Determine whose turn it is
+        currentTurn = (gameData.sum % 2 === 1) ? 'X' : 'O';
+        whosTurnText.innerText = `${currentTurn}'s Turn`;
+        
+        if (gameData.p1.p1move) {
+            const btn = document.getElementById(gameData.p1.p1move);
+            btn.innerText = "X";
+            btn.disabled = true;
+        }
+        if (gameData.p2.p2move) {
+            const btn = document.getElementById(gameData.p2.p2move);
+            btn.innerText = "O";
+            btn.disabled = true;
+        }
+        
+        checkWin(gameData.sum);
+
+        // Enable or disable board based on whose turn it is
+        if (gameActive && currentTurn === playerSymbol) {
+            enableBoard();
+        } else {
+            disableBoard();
+        }
       }
 
-      if (p1id != "") {
-        document.getElementById(`${p1id}`).innerText = "X";
-        document.getElementById(`${p1id}`).disabled = true;
-        document.getElementById(`${p1id}`).style.color = "black";
+      function checkWin(sum) {
+        const winningCombinations = [
+          [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+          [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+          [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+        
+        let winnerFound = false;
+        
+        for (const combo of winningCombinations) {
+            const [a, b, c] = combo;
+            const btnA = allButtons[a].innerText;
+            const btnB = allButtons[b].innerText;
+            const btnC = allButtons[c].innerText;
+
+            if (btnA && btnA === btnB && btnA === btnC) {
+                const winner = (sum % 2 !== 0) ? 'X' : 'O';
+                endGame(winner);
+                winnerFound = true;
+                break;
+            }
+        }
+
+        if (!winnerFound && sum === 9) {
+            endGame('draw');
+        }
       }
-      if (p2id != "") {
-        document.getElementById(`${p2id}`).innerText = "O";
-        document.getElementById(`${p2id}`).disabled = true;
-        document.getElementById(`${p2id}`).style.color = "black";
+
+      function endGame(result) {
+        gameActive = false;
+        disableBoard();
+        socket.emit("gameOver", { name: playerName });
+
+        let message = "";
+        if (result === 'draw') {
+            message = "It's a Draw! 🤝";
+        } else {
+            message = (result === playerSymbol) ? "You Won! 🎉" : "You Lost 😞";
+        }
+        
+        gameOverMessage.innerText = message;
+        gameOverModal.style.display = "flex";
       }
 
-      check(name, foundObject.sum);
-    });
-
-    function check(name, sum) {
-      document.getElementById("btn1").innerText == ""
-        ? (b1 = "a")
-        : (b1 = document.getElementById("btn1").innerText);
-      document.getElementById("btn2").innerText == ""
-        ? (b2 = "b")
-        : (b2 = document.getElementById("btn2").innerText);
-      document.getElementById("btn3").innerText == ""
-        ? (b3 = "c")
-        : (b3 = document.getElementById("btn3").innerText);
-      document.getElementById("btn4").innerText == ""
-        ? (b4 = "d")
-        : (b4 = document.getElementById("btn4").innerText);
-      document.getElementById("btn5").innerText == ""
-        ? (b5 = "e")
-        : (b5 = document.getElementById("btn5").innerText);
-      document.getElementById("btn6").innerText == ""
-        ? (b6 = "f")
-        : (b6 = document.getElementById("btn6").innerText);
-      document.getElementById("btn7").innerText == ""
-        ? (b7 = "g")
-        : (b7 = document.getElementById("btn7").innerText);
-      document.getElementById("btn8").innerText == ""
-        ? (b8 = "h")
-        : (b8 = document.getElementById("btn8").innerText);
-      document.getElementById("btn9").innerText == ""
-        ? (b9 = "i")
-        : (b9 = document.getElementById("btn9").innerText);
-
-      if (
-        (b1 == b2 && b2 == b3) ||
-        (b4 == b5 && b5 == b6) ||
-        (b7 == b8 && b8 == b9) ||
-        (b1 == b4 && b4 == b7) ||
-        (b2 == b5 && b5 == b8) ||
-        (b3 == b6 && b6 == b9) ||
-        (b1 == b5 && b5 == b9) ||
-        (b3 == b5 && b5 == b7)
-      ) {
-        socket.emit("gameOver", { name: name });
-
-        setTimeout(() => {
-          sum % 2 == 0 ? alert("X WON !!") : alert("O WON !!");
-
-          setTimeout(() => {
-            location.reload();
-          }, 2000);
-        }, 100);
-      } else if (sum == 10) {
-        socket.emit("gameOver", { name: name });
-
-        setTimeout(() => {
-          alert("DRAW!!");
-
-          setTimeout(() => {
-            location.reload();
-          }, 2000);
-        }, 100);
+      function enableBoard() {
+        whosTurnText.style.color = '#34a853';
+        allButtons.forEach(btn => {
+            if (btn.innerText === "") {
+                btn.disabled = false;
+            }
+        });
       }
-    }
-  </script>
+
+      function disableBoard() {
+        whosTurnText.style.color = '#d93025';
+        allButtons.forEach(btn => {
+            btn.disabled = true;
+        });
+      }
+    </script>
+  </body>
 </html>
